@@ -1,0 +1,60 @@
+<html lang="en">
+<head><title>Screen Sharing</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style> body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+    }
+
+    ini
+    Copy
+    h1 {
+        margin-bottom: 20px;
+    }
+
+    #frameImage {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    </style>
+    <script src="/static/socket.io.min.js"></script>
+    <script type="text/javascript">
+        const socket = io();
+
+        socket.on('connect', function () {
+            console.log('WebSocket connection established');
+        });
+
+        socket.on('refresh_frame', function (refresh_frame) {
+            let img = document.getElementById('frameImage');
+            const bytes = new Uint8Array(refresh_frame);
+            const length = bytes.length;
+            let binary = '';
+            for (let i = 0; i < length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64Data = btoa(binary);
+            console.log(base64Data)
+            img.src = 'data:image/jpg;base64,' + base64Data
+        });
+
+        socket.on('refresh_user_count', function (refresh_user_count) {
+            let count = document.getElementById('count');
+            count.innerHTML = 'Online: ' + refresh_user_count;
+        });
+
+        socket.on('disconnect', function () {
+            console.log('WebSocket connection closed');
+        });
+    </script>
+</head>
+<body>
+<div><h1>Screen Sharing</h1>
+    <h3 id="count">Online: 0</h3></div>
+<img id="frameImage" alt="Screen Frame" src="/static/404.png"></body>
+</html>
