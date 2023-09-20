@@ -44,13 +44,9 @@ def compress_bytes(data):
 
 def capture_screen():
     img = ImageGrab.grab(bbox=(0, 0, screen_width, screen_height))
+    img = img.resize((1920, 1080))
     img = np.array(img)
-
-    target_width = 1920
-    target_height = int(target_width * (screen_height / screen_width))
-
-    resized_array = cv2.resize(img, (target_width, target_height))
-    resized_array = cv2.cvtColor(resized_array, cv2.COLOR_BGR2RGB)
+    resized_array = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     return resized_array
 
