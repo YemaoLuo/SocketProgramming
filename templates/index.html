@@ -41,7 +41,6 @@
                 binary += String.fromCharCode(bytes[i]);
             }
             const base64Data = btoa(binary);
-            console.log(base64Data)
             img.src = 'data:image/jpg;base64,' + base64Data
         });
 

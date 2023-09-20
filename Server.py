@@ -6,7 +6,7 @@ from io import BytesIO
 import cv2
 import numpy as np
 import pyautogui
-from PIL import ImageGrab, UnidentifiedImageError, Image
+from PIL import ImageGrab, UnidentifiedImageError
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 
@@ -21,12 +21,11 @@ def emit_screen_capture():
     while True:
         try:
             start_time = time.time()
-            img = capture_screen()
-            _, img_encoded = cv2.imencode('.jpg', img)
-            img_bytes = img_encoded.tobytes()
-            compress_img_bytes = compress_bytes(img_bytes)
+            screen_image = capture_screen()
+            _, img_encoded = cv2.imencode('.jpg', screen_image)
+            compressed_image_bytes = compress_bytes(img_encoded.tobytes())
 
-            socketio.emit('refresh_frame', compress_img_bytes)
+            socketio.emit('refresh_frame', compressed_image_bytes)
 
             elapsed_time = time.time() - start_time
             delay = max(0, 1 / 30 - elapsed_time)
@@ -36,23 +35,21 @@ def emit_screen_capture():
 
 
 def compress_bytes(data):
-    buf = BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode='wb') as f:
-        f.write(data)
-    compressed_data = buf.getvalue()
+    with BytesIO() as buf:
+        with gzip.GzipFile(fileobj=buf, mode='wb') as f:
+            f.write(data)
+        compressed_data = buf.getvalue()
     return compressed_data
 
 
 def capture_screen():
     img = ImageGrab.grab(bbox=(0, 0, screen_width, screen_height))
     img = np.array(img)
-    img = Image.fromarray(img)
 
     target_width = 1920
     target_height = int(target_width * (screen_height / screen_width))
 
-    resized_img = img.resize((target_width, target_height))
-    resized_array = np.array(resized_img)
+    resized_array = cv2.resize(img, (target_width, target_height))
     resized_array = cv2.cvtColor(resized_array, cv2.COLOR_BGR2RGB)
 
     return resized_array
