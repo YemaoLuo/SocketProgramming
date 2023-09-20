@@ -1,5 +1,7 @@
+import gzip
 import threading
 import time
+from io import BytesIO
 
 import cv2
 import numpy as np
@@ -22,14 +24,23 @@ def emit_screen_capture():
             img = capture_screen()
             _, img_encoded = cv2.imencode('.jpg', img)
             img_bytes = img_encoded.tobytes()
+            compress_img_bytes = compress_bytes(img_bytes)
 
-            socketio.emit('refresh_frame', img_bytes)
+            socketio.emit('refresh_frame', compress_img_bytes)
 
             elapsed_time = time.time() - start_time
             delay = max(0, 1 / 30 - elapsed_time)
             time.sleep(delay)
         except UnidentifiedImageError:
             break
+
+
+def compress_bytes(data):
+    buf = BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode='wb') as f:
+        f.write(data)
+    compressed_data = buf.getvalue()
+    return compressed_data
 
 
 def capture_screen():

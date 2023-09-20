@@ -23,6 +23,7 @@
     }
     </style>
     <script src="/static/socket.io.min.js"></script>
+    <script src="/static/paco.min.js"></script>
     <script type="text/javascript">
         const socket = io();
 
@@ -32,7 +33,8 @@
 
         socket.on('refresh_frame', function (refresh_frame) {
             let img = document.getElementById('frameImage');
-            const bytes = new Uint8Array(refresh_frame);
+            let compressedDataArray = new Uint8Array(refresh_frame);
+            let bytes = pako.inflate(compressedDataArray);
             const length = bytes.length;
             let binary = '';
             for (let i = 0; i < length; i++) {
