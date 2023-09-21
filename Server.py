@@ -4,9 +4,10 @@ import time
 from io import BytesIO
 
 import cv2
+import mss
 import numpy as np
 import pyautogui
-from PIL import ImageGrab, UnidentifiedImageError
+from PIL import UnidentifiedImageError, Image
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 
@@ -28,7 +29,7 @@ def emit_screen_capture():
             socketio.emit('refresh_frame', compressed_image_bytes)
 
             elapsed_time = time.time() - start_time
-            delay = max(0, 1 / 30 - elapsed_time)
+            delay = max(0, 1 / 60 - elapsed_time)
             time.sleep(delay)
         except UnidentifiedImageError:
             break
@@ -43,12 +44,15 @@ def compress_bytes(data):
 
 
 def capture_screen():
-    img = ImageGrab.grab(bbox=(0, 0, screen_width, screen_height))
+    with mss.mss() as sct:
+        monitor = {"top": 0, "left": 0, "width": screen_width, "height": screen_height}
+        img = np.array(sct.grab(monitor))
+
+    img = Image.fromarray(img)
     img = img.resize((1920, 1080))
     img = np.array(img)
-    resized_array = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    return resized_array
+    return img
 
 
 def emit_user_count():
