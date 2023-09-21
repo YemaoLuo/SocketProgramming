@@ -24,16 +24,11 @@ target_height = int(720 * screen_height / 1080)
 def emit_screen_capture():
     while True:
         try:
-            start_time = time.time()
             screen_image = capture_screen()
             _, img_encoded = cv2.imencode('.jpg', screen_image)
             compressed_image_bytes = compress_bytes(img_encoded.tobytes())
 
             socketio.emit('refresh_frame', compressed_image_bytes)
-
-            elapsed_time = time.time() - start_time
-            delay = max(0, 1 / 60 - elapsed_time)
-            time.sleep(delay)
         except UnidentifiedImageError:
             break
 
