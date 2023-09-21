@@ -14,8 +14,11 @@ from flask_socketio import SocketIO
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret'
 socketio = SocketIO(app)
+
 connected_users = []
 screen_width, screen_height = pyautogui.size()
+target_width = int(1280 * screen_width / 1920)
+target_height = int(720 * screen_height / 1080)
 
 
 def emit_screen_capture():
@@ -49,7 +52,7 @@ def capture_screen():
         img = np.array(sct.grab(monitor))
 
     img = Image.fromarray(img)
-    img = img.resize((1920, 1080))
+    img = img.resize((target_width, target_height))
     img = np.array(img)
 
     return img
